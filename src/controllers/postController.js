@@ -93,7 +93,7 @@ exports.createPost = asyncHandler(async (req, res, next) => {
   }
 
   const slug = slugify(title, { lower: true, strict: true });
-  const featuredImage = req.file ? req.file.filename : null;
+  const featuredImage = req.file ? req.file.supabaseUrl : null;
 
   if (tags && typeof tags === 'string') {
     try { tags = JSON.parse(tags); } catch (e) { }
@@ -146,7 +146,7 @@ exports.updatePost = asyncHandler(async (req, res, next) => {
   }
   if (content) updateData.content = content;
   if (status) updateData.status = status;
-  if (req.file) updateData.featuredImage = req.file.filename;
+  if (req.file) updateData.featuredImage = req.file.supabaseUrl;
 
   if (tags) {
     if (typeof tags === 'string') {

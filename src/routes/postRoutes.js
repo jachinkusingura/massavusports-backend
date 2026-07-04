@@ -1,7 +1,7 @@
 const express = require('express');
 const postController = require('../controllers/postController');
 const { protect } = require('../middlewares/authMiddleware');
-const { uploadPostImage } = require('../middlewares/uploadMiddleware');
+const { uploadPostImage, saveImageToSupabase } = require('../middlewares/uploadMiddleware');
 const commentRouter = require('./commentRoutes');
 
 const router = express.Router();
@@ -12,12 +12,12 @@ router.use('/:postId/comments', commentRouter);
 router
   .route('/')
   .get(postController.getAllPosts)
-  .post(protect, uploadPostImage, postController.createPost);
+  .post(protect, uploadPostImage, saveImageToSupabase, postController.createPost);
 
 router
   .route('/:id')
   .get(postController.getPost)
-  .put(protect, uploadPostImage, postController.updatePost)
+  .put(protect, uploadPostImage, saveImageToSupabase, postController.updatePost)
   .delete(protect, postController.deletePost);
 
 module.exports = router;
