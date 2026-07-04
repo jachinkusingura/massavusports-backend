@@ -78,6 +78,31 @@ exports.getPost = asyncHandler(async (req, res, next) => {
   });
 });
 
+// Helper to generate a unique, non-colliding slug for posts
+async function generateUniqueSlug(title, postId = null) {
+  const baseSlug = slugify(title, { lower: true, strict: true });
+  let slug = baseSlug;
+  let count = 1;
+
+  while (true) {
+    const existing = await prisma.post.findFirst({
+      where: {
+        slug,
+        NOT: postId ? { id: postId } : undefined
+      }
+    });
+
+    if (!existing) {
+      break;
+    }
+
+    slug = `${baseSlug}-${count}`;
+    count++;
+  }
+
+  return slug;
+}
+
 // Create Post
 /**
  * Create a new post
@@ -92,7 +117,7 @@ exports.createPost = asyncHandler(async (req, res, next) => {
     return next(new AppError('Title and content are required', 400));
   }
 
-  const slug = slugify(title, { lower: true, strict: true });
+  const slug = await generateUniqueSlug(title);
   const featuredImage = req.file ? req.file.supabaseUrl : null;
 
   if (tags && typeof tags === 'string') {
@@ -133,7 +158,8 @@ exports.updatePost = asyncHandler(async (req, res, next) => {
   const { title, content, status } = req.body;
   let { tags } = req.body;
 
-  const existingPost = await prisma.post.findUnique({ where: { id: parseInt(id) } });
+  const postId = parseInt(id);
+  const existingPost = await prisma.post.findUnique({ where: { id: postId } });
 
   if (!existingPost) {
     return next(new AppError('No post found with that ID', 404));
@@ -142,7 +168,7 @@ exports.updatePost = asyncHandler(async (req, res, next) => {
   const updateData = {};
   if (title) {
     updateData.title = title;
-    updateData.slug = slugify(title, { lower: true, strict: true });
+    updateData.slug = await generateUniqueSlug(title, postId);
   }
   if (content) updateData.content = content;
   if (status) updateData.status = status;
@@ -161,7 +187,7 @@ exports.updatePost = asyncHandler(async (req, res, next) => {
   }
 
   const updatedPost = await prisma.post.update({
-    where: { id: parseInt(id) },
+    where: { id: postId },
     data: updateData,
     include: { tags: true }
   });
