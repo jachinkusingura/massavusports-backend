@@ -33,19 +33,29 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
 const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
 
-if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY || !SUPABASE_SECRET_KEY) {
-    console.warn(
-        '[supabase] Warning: SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, or SUPABASE_SECRET_KEY is missing from .env'
-    );
+// Provide clear debugging output if variables are missing or malformed
+if (!SUPABASE_URL || typeof SUPABASE_URL !== 'string' || !SUPABASE_URL.startsWith('http')) {
+    console.error('----------------------------------------------------');
+    console.error('[SUPABASE DIAGNOSTIC ERROR] SUPABASE_URL is invalid!');
+    console.error(`Received Type: ${typeof SUPABASE_URL}`);
+    console.error(`Received Value: "${SUPABASE_URL}"`);
+    console.error('Please check your Render environment settings.');
+    console.error('----------------------------------------------------');
+}
+
+if (!SUPABASE_SECRET_KEY) {
+    console.error('[SUPABASE DIAGNOSTIC ERROR] SUPABASE_SECRET_KEY is missing!');
 }
 
 /**
  * Admin client — bypasses Row Level Security (service role key).
  * Equivalent to ctx.supabaseAdmin in @supabase/server.
  */
-const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SECRET_KEY, {
-    auth: { autoRefreshToken: false, persistSession: false }
-});
+const supabaseAdmin = createClient(
+    SUPABASE_URL || 'https://placeholder-to-prevent-startup-crash.supabase.co',
+    SUPABASE_SECRET_KEY || 'placeholder-key',
+    { auth: { autoRefreshToken: false, persistSession: false } }
+);
 
 /**
  * withSupabase({ auth }) — Express middleware factory
