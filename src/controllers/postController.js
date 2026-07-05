@@ -118,7 +118,7 @@ exports.createPost = asyncHandler(async (req, res, next) => {
   }
 
   const slug = await generateUniqueSlug(title);
-  const featuredImage = req.file ? req.file.supabaseUrl : null;
+  const featuredImage = req.file ? req.file.cloudinaryUrl : null;
 
   if (tags && typeof tags === 'string') {
     try { tags = JSON.parse(tags); } catch (e) { }
@@ -172,7 +172,7 @@ exports.updatePost = asyncHandler(async (req, res, next) => {
   }
   if (content) updateData.content = content;
   if (status) updateData.status = status;
-  if (req.file) updateData.featuredImage = req.file.supabaseUrl;
+  if (req.file) updateData.featuredImage = req.file.cloudinaryUrl;
 
   if (tags) {
     if (typeof tags === 'string') {
