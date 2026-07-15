@@ -180,8 +180,11 @@ exports.updatePost = asyncHandler(async (req, res, next) => {
     }
     if (Array.isArray(tags)) {
       updateData.tags = {
-        set: [], // clear existing
-        connect: tags.map(tagId => ({ id: parseInt(tagId) }))
+        set: [], // clear existing tags
+        connectOrCreate: tags.map(tagName => ({
+          where: { name: tagName },
+          create: { name: tagName, slug: slugify(tagName, { lower: true, strict: true }) }
+        }))
       };
     }
   }
