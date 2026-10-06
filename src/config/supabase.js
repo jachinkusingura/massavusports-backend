@@ -29,6 +29,15 @@
 const { createClient } = require('@supabase/supabase-js');
 const AppError = require('../utils/AppError');
 
+// Polyfill globalThis.WebSocket for Node.js runtimes < 22 where Supabase Realtime client requires it
+if (!globalThis.WebSocket) {
+    try {
+        globalThis.WebSocket = require('ws');
+    } catch (e) {
+        console.warn('[SUPABASE] Notice: "ws" package not found for global WebSocket polyfill');
+    }
+}
+
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
 const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
